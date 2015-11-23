@@ -1,0 +1,138 @@
+<!doctype html> 
+<html>
+<head>
+<ttile>Roll over Canvas</title>
+<script>
+var canvas;
+var context;
+var rectangles;
+var circles = [];
+
+function makeRectangles(){
+	rectangles =[];
+	for (var z = 0; z < 10; z++)
+	{
+		rectangles.push(new Rectangle());
+	}
+}
+function Rectangle()
+{
+this.x = canvas.width/2;
+this.y = canvas.height/2;
+this.vx = Math.random()*10-5;
+this.vy = Math.random()*10-5;
+var colors = ["red", "green", "blue", "orange", "purple", "yellow", "white"];
+this.color = colors[Math.floor(Math.random()*colors.length)];
+
+}
+
+function moveRectangels() {
+	 
+	 context.globalCompositeOperation = "source-over";
+	 context.fillStyle = "rgba(0, 0, 0, 0.3)";
+	 context.fillRect(0, 0, canvas.width, canvas.height);
+	 context.globalCompositeOperation = "lighter";
+	 for(var z = 0; z < rectangles.length; z++)
+	 {
+		 var p = rectangles[z];
+		 context.beginPath();
+		 context.fillRect(p.x, p.y, 75, 50);
+		 context.fillStyle = p.color;
+		 context.fill();
+        if (p.x + p.vx > canvas.width || p.x + p.vx < 0)
+        p.vx = -p.vx;
+        if (p.y + p.vy > canvas.height || p.y + p.vy < 0)
+        p.vy = -p.vy;
+        p.x += p.vx;
+        p.y += p.vy;
+		
+	 }
+}
+
+function Circle (x, y, color, dx, dy){
+	this.x = x;
+	this.y = y;
+	this.color = color;
+	this.dx = Math.random()* 10-5;
+	this.dy = Math.random()* 10-5;
+}
+
+
+function init(){
+	canvas = document.getElementById('canvas');
+	context = canvas.getContext('2d');
+
+	window.addEventListener('resize' , resizeCanvas, false);
+	window.addEventListener('orientationchange', resizeCanvas, false);
+	resizeCanvas();
+	canvas.onmousemove = function(event){
+		onmousemove(event.clientX, event.clientY);
+	};
+	makeRectangles();
+	timer = setInterval(moveRectangels, 80)
+	
+}
+
+function onmousemove(x, y){
+	var found = false;
+	for(var i = 0; i < circles.length; i++){
+		d = Math.sqrt((circles[i].x - x) * ( circles[i].x-x) + (circles[i].y - y) * (circles[i].y - y));
+		if(d <= 30){
+			circles.splice(i, 1);
+			found = true;
+		}	
+	}
+
+	fillBackgroundColor();
+	if(!found){
+		var colors = ['#00ff00', '#ffff99','#ffb3ff', '#b266ff' , '#ff3333', '#33ccff' , '#ffa366'];
+		var color = colors[Math.floor(Math.random()*colors.length)];
+		circles.push(new Circle(x, y, color));
+	}	
+	for(var i = 0; i < circles.length; i++){
+		drawCircle(circles[i]);
+	}
+}
+
+function drawCircle(circle){
+	//context.globalCompositeOperation = "lighter";
+	context.beginPath();
+	context.arc(circle.x, circle.y, 15, 0, degreesToRadians(360), true);
+	context.fillStyle = circle.color;
+	context.fill();
+  		 circle.x += circle.dx;
+		 circle.y += circle.dy;
+		 if(circle.x < -50) circle.x = canvas.width+50;
+		 if(circle.y < -50) circle.y = canvas.height+50;
+		 if(circle.x > canvas.width+50) circle.x = -50;
+		 if(circle.y > canvas.height+50) circle.y = -50;
+		 circle.radius -= 1;
+	 
+}
+
+function resizeCanvas(){
+	canvas.width = window.innerWidth - 20;
+	canvas.height = window.innerHeight - 20;
+	fillBackgroundColor();
+	for(var i = 0; i < circles.length; i++){
+		drawCircle(circles[i]);
+	}
+	//timer = setInterval(resizeCanvas, 10);
+}
+
+function fillBackgroundColor() {
+	context.fillStyle = 'black'; 
+	context.fillRect(0,0, canvas.width, canvas.height);
+}
+
+function degreesToRadians(degrees){
+	return (degrees * Math.PI)/180
+}
+
+window.onload = init;
+</script>
+</head>
+<body>
+<canvas id ='canvas' width=500 height=500></canvas>
+
+</html>
